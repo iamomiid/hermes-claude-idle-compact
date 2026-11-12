@@ -1,0 +1,23 @@
+# Merge these keys into the selected Hermes profile's config.yaml.
+# Enable the plugin with `hermes -p cmo plugins enable claude-idle-compact`;
+# preserve the profile's other enabled plugins.
+context:
+  engine: claude_idle_compact
+
+prompt_caching:
+  cache_ttl: auto
+
+compression:
+  enabled: true
+  idle_compact_after_seconds: 0
+
+plugins:
+  entries:
+    claude-idle-compact:
+      settings:
+        min_prompt_tokens: 200000
+        prepare_fraction: 0.9
+        expiry_margin_seconds: 30
+        max_summary_tokens: 8000
+        request_timeout_seconds: 180
+        min_cache_hit_ratio: 0.8

@@ -1,0 +1,7 @@
+name: claude-idle-compact
+version: 0.1.0
+description: Prepare Claude summaries before a one-hour cache expires; compact on return.
+author: local
+kind: standalone
+provides_hooks: [pre_llm_call, on_session_end]
+provides_middleware: [llm_execution]
