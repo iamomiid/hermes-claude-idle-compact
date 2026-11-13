@@ -50,7 +50,9 @@ Related upstream requests:
 - [Compaction preview, #152499](https://github.com/NousResearch/hermes-agent/pull/152499)
 - [Background compaction, #117886](https://github.com/NousResearch/hermes-agent/issues/117886)
 
-The focused proposal is in [upstream-api-request.md](upstream-api-request.md).
+The focused proposal was submitted as
+[Hermes #155029](https://github.com/NousResearch/hermes-agent/issues/155029).
+Its source is [upstream-api-request.md](upstream-api-request.md).
 
 ## Admission sequence after those APIs ship
 

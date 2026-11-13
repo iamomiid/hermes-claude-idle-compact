@@ -7,7 +7,9 @@ the checkpoint through its normal compaction pipeline when the next message arri
 **Status: experimental standalone alpha; not catalog-approved.** Live cache
 savings have not been measured. Catalog admission is blocked on public Hermes
 APIs for host-owned Claude requests and prepared-summary adoption. See
-[catalog readiness](docs/catalog-readiness.md) and [security](SECURITY.md).
+[catalog readiness](docs/catalog-readiness.md), the
+[upstream API request](https://github.com/NousResearch/hermes-agent/issues/155029),
+and [security](SECURITY.md).
 
 This plugin does not change Hermes core files or T3. Installing it does not
 activate its context engine until you explicitly select it in your profile.
