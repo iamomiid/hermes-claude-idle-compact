@@ -28,7 +28,8 @@ class HostTests(unittest.TestCase):
         self.addCleanup(self.tmp.cleanup)
         self.home = Path(self.tmp.name)
         self.config = {"compression": {"threshold": .5, "target_ratio": .2, "protect_first_n": 1,
-                                        "protect_last_n": 2, "tail_mode": "lean"}}
+                                        "protect_last_n": 2, "tail_mode": "lean"},
+                       "context": {"engine": host.ENGINE_NAME}}
         patcher = patch.object(host, "load_config", return_value=self.config)
         patcher.start()
         self.addCleanup(patcher.stop)
@@ -173,6 +174,7 @@ class HostTests(unittest.TestCase):
         self.assertIsNone(host.capture_response(req, response, started_at=100, route=capture().route))
 
     def test_oauth_headers_and_summary_request_use_real_host_sdk_with_mock_http(self):
+        import anthropic
         import httpx
         from agent import anthropic_adapter, anthropic_credentials
         real_builder = anthropic_adapter.build_anthropic_client
@@ -198,6 +200,7 @@ class HostTests(unittest.TestCase):
             return real_create(client, body, prefer_stream=False, **kwargs)
 
         with patch.object(anthropic_credentials, "resolve_anthropic_token", return_value=token), \
+             patch.object(anthropic_adapter, "_require_sdk", return_value=anthropic), \
              patch.object(anthropic_adapter, "build_anthropic_client", side_effect=builder), \
              patch.object(anthropic_adapter, "create_anthropic_message", side_effect=create), \
              patch.object(anthropic_adapter, "_get_claude_code_version", return_value="test"):
@@ -245,11 +248,24 @@ class HostTests(unittest.TestCase):
         response = object()
         h = Harness()
         with patch.object(plugin, "_controller", h.controller), \
-             patch.object(host, "capture_response", side_effect=ValueError("bad response")), \
+             patch.object(host, "capture_response", side_effect=ValueError("bad response")) as capture_response, \
              patch.object(plugin.log, "warning"):
             next_call = unittest.mock.Mock(return_value=response)
             self.assertIs(plugin.execute(capture().request, next_call, session_id="s1", **capture().route), response)
             next_call.assert_called_once()
+            capture_response.assert_called_once()
+
+    def test_unselected_engine_does_not_capture_or_schedule_requests(self):
+        import claude_idle_plugin as plugin
+        h = Harness()
+        self.config["context"]["engine"] = "compressor"
+        response = object()
+        with patch.object(plugin, "_controller", h.controller), patch.object(host, "capture_response") as capture_response:
+            next_call = unittest.mock.Mock(return_value=response)
+            self.assertIs(plugin.execute(capture().request, next_call, session_id="s1", **capture().route), response)
+            next_call.assert_called_once()
+            capture_response.assert_not_called()
+        self.assertFalse(h.controller.states)
 
     def test_real_plugin_manager_discovers_and_unloads_plugin(self):
         from hermes_cli.plugins import PluginManager

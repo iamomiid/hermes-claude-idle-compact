@@ -14,12 +14,12 @@
     {
       "name": "requires_hermes",
       "ok": true,
-      "detail": "not declared"
+      "detail": "spec '>=0.23.0' parses"
     },
     {
       "name": "config schema",
       "ok": true,
-      "detail": "not declared"
+      "detail": "shape valid"
     },
     {
       "name": "requires_env",

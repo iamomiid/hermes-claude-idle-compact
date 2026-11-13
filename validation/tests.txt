@@ -1,5 +1,6 @@
 test_caching_only_the_system_prompt_is_not_enough (test_controller.EligibilityTests.test_caching_only_the_system_prompt_is_not_enough) ... ok
 test_invalid_configuration (test_controller.EligibilityTests.test_invalid_configuration) ... ok
+test_invalid_types_and_non_finite_settings_are_rejected (test_controller.EligibilityTests.test_invalid_types_and_non_finite_settings_are_rejected) ... ok
 test_mixed_and_implicit_five_minute_markers_refused (test_controller.EligibilityTests.test_mixed_and_implicit_five_minute_markers_refused) ... ok
 test_only_native_interactive_claude (test_controller.EligibilityTests.test_only_native_interactive_claude) ... ok
 test_tool_argument_named_cache_control_is_not_a_cache_marker (test_controller.EligibilityTests.test_tool_argument_named_cache_control_is_not_a_cache_marker) ... ok
@@ -35,9 +36,10 @@ test_oauth_headers_and_summary_request_use_real_host_sdk_with_mock_http (test_he
 test_prepared_summary_adopted_by_real_compressor_without_llm_or_transcript_mutation (test_hermes.HostTests.test_prepared_summary_adopted_by_real_compressor_without_llm_or_transcript_mutation) ... ok
 test_real_plugin_manager_discovers_and_unloads_plugin (test_hermes.HostTests.test_real_plugin_manager_discovers_and_unloads_plugin) ... ok
 test_turn_completion_arms_only_after_real_request_with_warm_cache (test_hermes.HostTests.test_turn_completion_arms_only_after_real_request_with_warm_cache) ... ok
+test_unselected_engine_does_not_capture_or_schedule_requests (test_hermes.HostTests.test_unselected_engine_does_not_capture_or_schedule_requests) ... ok
 test_warm_body_preserves_entire_prefix_and_final_answer (test_hermes.HostTests.test_warm_body_preserves_entire_prefix_and_final_answer) ... ok
 
 ----------------------------------------------------------------------
-Ran 36 tests in 7.405s
+Ran 38 tests in 0.566s
 
 OK

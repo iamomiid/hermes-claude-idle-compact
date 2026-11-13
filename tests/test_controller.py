@@ -189,6 +189,13 @@ class EligibilityTests(unittest.TestCase):
             with self.subTest(kw=kw), self.assertRaises(ValueError):
                 Settings(**kw)
 
+    def test_invalid_types_and_non_finite_settings_are_rejected(self):
+        for kw in ({"min_prompt_tokens": True}, {"max_summary_tokens": 8000.5},
+                   {"prepare_fraction": "0.9"}, {"prepare_fraction": float("nan")},
+                   {"request_timeout_seconds": float("inf")}, {"expiry_margin_seconds": False}):
+            with self.subTest(kw=kw), self.assertRaises(ValueError):
+                Settings(**kw)
+
 
 if __name__ == "__main__":
     unittest.main()

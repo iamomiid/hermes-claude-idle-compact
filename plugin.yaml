@@ -1,7 +1,35 @@
 name: claude-idle-compact
-version: 0.1.0
+version: 0.1.1-alpha.1
 description: Prepare Claude summaries before a one-hour cache expires; compact on return.
-author: local
+author: iamomiid
+homepage: https://github.com/iamomiid/hermes-claude-idle-compact
+license: MIT
+requires_hermes: ">=0.23.0"
 kind: standalone
 provides_hooks: [pre_llm_call, on_session_end]
 provides_middleware: [llm_execution]
+config_schema:
+  min_prompt_tokens:
+    type: int
+    default: 200000
+    label: Minimum prompt tokens
+  prepare_fraction:
+    type: float
+    default: 0.9
+    label: Fraction of cache lifetime before preparation
+  expiry_margin_seconds:
+    type: float
+    default: 30
+    label: Minimum seconds before cache expiry
+  max_summary_tokens:
+    type: int
+    default: 8000
+    label: Summary output budget including thinking
+  request_timeout_seconds:
+    type: float
+    default: 180
+    label: Summary request timeout
+  min_cache_hit_ratio:
+    type: float
+    default: 0.8
+    label: Minimum observed cache hit ratio for adoption

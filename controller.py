@@ -5,6 +5,7 @@ import copy
 import hashlib
 import json
 import logging
+import math
 import threading
 import time
 from dataclasses import dataclass, field
@@ -80,6 +81,14 @@ class Settings:
     min_cache_hit_ratio: float = .8
 
     def __post_init__(self):
+        for name in ("min_prompt_tokens", "max_summary_tokens"):
+            value = getattr(self, name)
+            if type(value) is not int:
+                raise ValueError(f"{name} must be an integer")
+        for name in ("prepare_fraction", "expiry_margin_seconds", "request_timeout_seconds", "min_cache_hit_ratio"):
+            value = getattr(self, name)
+            if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value):
+                raise ValueError(f"{name} must be a finite number")
         if not 0 < self.prepare_fraction < 1:
             raise ValueError("prepare_fraction must be between 0 and 1")
         if self.min_prompt_tokens < 1 or self.max_summary_tokens < 1024:
@@ -122,6 +131,8 @@ class State:
 class Controller:
     def __init__(self, *, clock: Callable = time.monotonic, spawn: Callable,
                  wall_clock: Callable = time.time, max_sessions: int = 32):
+        if type(max_sessions) is not int or max_sessions < 1:
+            raise ValueError("max_sessions must be a positive integer")
         self.clock, self.wall_clock, self.spawn = clock, wall_clock, spawn
         self.max_sessions = max_sessions
         self.states: dict[tuple[str, str], State] = {}

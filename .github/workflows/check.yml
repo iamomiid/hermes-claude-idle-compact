@@ -1,0 +1,63 @@
+name: Checks
+
+on:
+  push:
+    branches: [main]
+    paths: ['**.py', 'plugin.yaml', '.github/workflows/**']
+  pull_request:
+    paths: ['**.py', 'plugin.yaml', '.github/workflows/**']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  standalone:
+    name: Standalone (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: '3.12'
+      - run: python scripts/check.py
+
+  hermes-contract:
+    name: Pinned Hermes contract and validator
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Validate against the tested Hermes source
+        uses: NousResearch/hermes-agent/.github/actions/plugin-validate@2bd378ed1b8d6bf2192cb26e0a55ff3091e6bd19
+        with:
+          path: ${{ github.workspace }}
+          hermes-ref: 2bd378ed1b8d6bf2192cb26e0a55ff3091e6bd19
+      - name: Test with the host-managed Anthropic dependency
+        shell: bash
+        env:
+          PLUGIN_SOURCE: ${{ github.workspace }}
+        run: |
+          set -euo pipefail
+          sources=("$RUNNER_TEMP"/hermes-plugin-validator.*)
+          test "${#sources[@]}" -eq 1
+          source="${sources[0]}"
+          validator="$source/.build/validator/bin/python"
+          "$validator" - "$source" "$PLUGIN_SOURCE" <<'PY'
+          import os, subprocess, sys
+          from pathlib import Path
+          from pm import build_environment
+          source, plugin = map(Path, sys.argv[1:])
+          python = build_environment(source=source, out=source / '.build/plugin-tests',
+                                     extras=['anthropic'], explicit=True)
+          subprocess.run([str(python), '-I', str(plugin / 'scripts/check.py'), '--require-hermes'], check=True)
+          PY

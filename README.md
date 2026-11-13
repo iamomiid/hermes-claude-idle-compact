@@ -4,9 +4,13 @@ A standalone, Claude-only Hermes plugin. It prepares a checkpoint while the
 conversation's one-hour prompt cache should still be warm, then lets Hermes apply
 the checkpoint through its normal compaction pipeline when the next message arrives.
 
-**Status: experimental local implementation, not installed or enabled by creating
-this folder.** Tests use fake provider responses; live cache savings have not been
-measured. The plugin does not change Hermes core files, your configuration, or T3.
+**Status: experimental standalone alpha; not catalog-approved.** Live cache
+savings have not been measured. Catalog admission is blocked on public Hermes
+APIs for host-owned Claude requests and prepared-summary adoption. See
+[catalog readiness](docs/catalog-readiness.md) and [security](SECURITY.md).
+
+This plugin does not change Hermes core files or T3. Installing it does not
+activate its context engine until you explicitly select it in your profile.
 
 ## Behavior
 
@@ -73,17 +77,15 @@ checks required methods, but cannot guarantee compatibility with every future
 release. Target the normal `in_process` plugin runtime; host-isolated execution
 has not been verified.
 
-## Install in one profile
+## Experimental installation in one profile
 
-Start with CMO. Run these commands from this plugin directory, after reviewing
-the code. They are installation instructions, not steps the creation task ran:
+Choose an existing Hermes profile in place of `my-bot`. Review the alpha's
+compatibility and credential-handling disclosures before enabling it:
 
 ```sh
-mkdir -p "$HOME/.hermes/profiles/cmo/plugins"
-ln -s "$PWD" "$HOME/.hermes/profiles/cmo/plugins/claude-idle-compact"
-hermes -p cmo plugins enable claude-idle-compact
-hermes -p cmo config set context.engine claude_idle_compact
-hermes -p cmo config set prompt_caching.cache_ttl auto
+hermes -p my-bot plugins install https://github.com/iamomiid/hermes-claude-idle-compact.git --enable
+hermes -p my-bot config set context.engine claude_idle_compact
+hermes -p my-bot config set prompt_caching.cache_ttl auto
 ```
 
 Only one context engine can be active. Do not combine with another context-engine
@@ -105,8 +107,8 @@ into the profile's existing configuration; do not replace its plugin list.
 To disable:
 
 ```sh
-hermes -p cmo config set context.engine compressor
-hermes -p cmo plugins disable claude-idle-compact
+hermes -p my-bot config set context.engine compressor
+hermes -p my-bot plugins disable claude-idle-compact
 ```
 
 Restart the owning backend between tasks to release existing agents and timers.
@@ -116,19 +118,20 @@ Restart the owning backend between tasks to release existing agents and timers.
 Scheduling tests require Python 3.10+ and the standard library:
 
 ```sh
-python3 -m unittest discover -s tests -v
+python3 scripts/check.py
 ```
 
-That command skips the host integration tests if Hermes is not importable. To run
-all tests under Hermes' managed runtime:
+That command skips the host integration tests if Hermes is not importable. After
+activating Hermes' managed development environment, run all host contracts with:
 
 ```sh
-hermes --run-module unittest discover -s "$PWD/tests" -v
+python3 scripts/check.py --require-hermes
 ```
 
-For a completely separate data home, set `HERMES_HOME` to a temporary directory
-when launching that command; Hermes may provision its managed dependencies there.
-Tests do not send live model requests. The OAuth test uses the real Hermes client
+The runner uses a temporary data home, blocks network connections during tests,
+and fails if `--require-hermes` skips host contracts. Use a Hermes runtime with
+the Anthropic extra already installed. Tests do not send live model requests.
+The OAuth test uses the real Hermes client
 builder and Anthropic SDK with an in-memory mock HTTP transport and fake token.
 Coverage includes real plugin discovery/unloading, native compressor adoption,
 timer cancellation/reset, expiry after sleep, profile separation, changed-history
@@ -163,3 +166,6 @@ usage log entries when auditing spend. `get_status()` also adds a
   its summary-call seam; no core monkey patches or direct database writes.
 - `__init__.py`: plugin registration and live-request capture.
 - `tests/`: standard-library tests, plus optional real Hermes contracts.
+
+Released under the [MIT License](LICENSE). See [CONTRIBUTING.md](CONTRIBUTING.md)
+for development and [CHANGELOG.md](CHANGELOG.md) for release history.
